@@ -51,8 +51,8 @@ feature_set=dataset_1.drop(columns=['cnt'])
 feature_name=feature_set.columns.values.tolist()
 print(len(feature_name))
 x_train,x_test,y_train,y_test=train_test_split(feature_set,label,random_state=1)
-clf=tree.DecisionTreeRegressor()#决策树回归模型
-clf=clf.fit(x_train,y_train)
+# clf=tree.DecisionTreeRegressor()#决策树回归模型
+# clf=clf.fit(x_train,y_train)
 # y_importances=clf.feature_importances_
 # print(y_importances)
 # x_importances=feature_name
@@ -79,19 +79,26 @@ R^2 train: 0.119, test: 0.113
 # for leaf_size in sample_leaf_options :
 # forest = RandomForestRegressor(n_estimators=1000, criterion='mse', oob_score = True,
 #                                 max_features = "auto", min_samples_leaf = 50,random_state=1, n_jobs=-1)
-# forest.fit(x_train, y_train)#MSE train: 21123.455, test: 842033.039
-# from sklearn.ensemble import GradientBoostingRegressor
-# gbdt=GradientBoostingRegressor(loss='ls',alpha=0.9
-#                                ,n_estimators=500,
-#                                learning_rate=0.05,
-#                                max_depth=8,
-#                                subsample=0.8,min_samples_split=9,max_leaf_nodes=10)
+# forest.fit(x_train, y_train)
+'''
+220
+[ 0.49951224  0.49990213  0.489549    0.51506279  0.51226327]
+MSE train: 29.700, test: 31.728
+R^2 train: 0.967, test: 0.966
+'''
+
+from sklearn.ensemble import GradientBoostingRegressor
+gbdt=GradientBoostingRegressor(loss='ls',alpha=0.9
+                               ,n_estimators=500,
+                               learning_rate=0.05,
+                               max_depth=8,
+                               subsample=0.8,min_samples_split=9,max_leaf_nodes=10)
 # from xgboost import XGBRegressor
 # xgb=XGBRegressor(learning_rate=0.05, n_estimators=500)
-scores=cross_val_score(clf,x_test,y_test,cv=5)
+scores=cross_val_score(gbdt,x_test,y_test,cv=5)
 print(scores)
-y_train_pred = clf.predict(x_train)
-y_test_pred =clf.predict(x_test)
+y_train_pred = gbdt.predict(x_train)
+y_test_pred =gbdt.predict(x_test)
 print('MSE train: %.3f, test: %.3f' % (mean_squared_error(y_train, y_train_pred),mean_squared_error(y_test, y_test_pred)))
 print('R^2 train: %.3f, test: %.3f' % (r2_score(y_train, y_train_pred),r2_score(y_test, y_test_pred)))
 plt.scatter(y_train_pred, y_train_pred - y_train, c='black', marker='o', s=35, alpha=0.5, label='Training data')
@@ -102,15 +109,14 @@ plt.legend(loc='upper left')
 plt.hlines(y=0, xmin=-10, xmax=50, lw=2, color='red')
 plt.xlim([-10, 50])
 plt.tight_layout()
-plt.savefig('./cnt_forest_residuals.png', dpi=300)
-plt.show()
+plt.savefig('./cnt_gbdt_residuals.png', dpi=300)
 pre_tran_data_1=pd.read_csv('./pre_tran_train_1.csv')
 pre_tran_data=pre_tran_data_1.drop(columns=['date_dt'])
 pre_tran_data=pd.get_dummies(pre_tran_data,columns=['o_city_code','o_district_code','d_city_code','d_district_code','work_day'])
 pre_tran_data=pre_tran_data.astype('float')
-y_predict=clf.predict(pre_tran_data)
+y_predict=gbdt.predict(pre_tran_data)
 pre_tran_data_1['cnt']=y_predict
-pre_tran_data_1.to_csv('./pre_tran_data.csv')
+pre_tran_data_1.to_csv('./pre_tran_gbdt_data.csv')
 
 
 
